@@ -4,14 +4,12 @@ class Parking < ApplicationRecord
 
   belongs_to :user, :optional => true
 
+  before_validation :setup_amount
+
   validate :validate_end_at_with_amount
 
   #自订了一个检查规则是 end_at 和 amount 需要一起填
   def validate_end_at_with_amount
-    if ( end_at.present? && amount.blank?)
-      errors.add(:amount, "有结束时间就必须有金额")
-    end
-
     if (end_at.blank? && amount.present?)
       errors.add(:end_at, "有金额就必须有结束时间")
     end
@@ -22,7 +20,7 @@ class Parking < ApplicationRecord
   end
 
 
-  def calculate_amount
+  def setup_amount
     if self.amount.blank? && self.start_at.present? && self.end_at.present?
       if self.user.blank?
         self.amount = calculate_guest_term_amount  # 一般费率
